@@ -1,6 +1,6 @@
 {
-  "name": "sails-couchdb",
-  "version": "0.10.3",
+  "name": "sails-couchdb-rj",
+  "version": "0.10.4",
   "description": "CouchDB adapter for Sails",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/codeswarm/sails-couchdb-orm.git"
+    "url": "https://github.com/rubenjgarcia/sails-couchdb-orm.git"
   },
   "keywords": [
     "couchdb",
@@ -28,6 +28,7 @@
   "contributors": [
     "Matheus Hoffmann Silva <hoffmann.matheus@gmail.com>",
     "Mike McNeil <@mikermcneil>"
+    "Ruben J Garcia <rubenjgarciab@gmail.com>"
   ],
   "license": "MIT",
   "readmeFilename": "README.md",

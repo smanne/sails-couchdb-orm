@@ -1,14 +1,14 @@
 function(doc) {
   if (
     {{#each attributes}}
-      'undefined' != typeof doc['{{.}}']
+      'undefined' != typeof doc['{{{.}}}']
       {{#unless @last}} && {{/unless}}
     {{/each}}
   ) {
     var keys = [];
     {{#each attributes}}
-      if (! Array.isArray(doc['{{.}}'])) keys.push([doc['{{.}}']]);
-      else keys.push(doc['{{.}}']);
+      if (! Array.isArray(doc['{{{.}}}'])) keys.push([doc['{{{.}}}']]);
+      else keys.push(doc['{{{.}}}']);
     {{/each}}
 
     _emit(keys);
@@ -27,7 +27,7 @@ function(doc) {
         broke = true
       }
     }
-    if (! broke) emit(values, doc);
+    if (! broke) emit(values, doc._id);
   }
 
 }

@@ -227,7 +227,7 @@ function find(connectionName, collectionName, criteria, cb, round) {
   // If you need to access your private data for this collection:
   var db = registry.db(collectionName);
 
-  console.log('GETTING DB FOR "%s"."%s"', connectionName, collectionName);
+  //console.log('GETTING DB FOR "%s"."%s"', connectionName, collectionName);
   // console.log('got: ',db);
   if (!db) {
     return cb((function buildError(){
@@ -299,39 +299,41 @@ function find(connectionName, collectionName, criteria, cb, round) {
   // Take a look at `criteria.where.like`...
   asyncx_ifTruthy(criteria.where.like,
 
-    // Handle "like" modifier using a view
-    function ifSoDo(next){
-      var viewName = views.name(criteria.where.like);
-      var value = views.likeValue(criteria.where.like, true);
-      dbOptions.startkey = value.startkey;
-      dbOptions.endkey = value.endkey;
-      return db.view('views', viewName, dbOptions, next);
-    },
+      // Handle "like" modifier using a view
+      function ifSoDo(next){
+        var viewName = views.name(criteria.where.like);
+        var value = views.likeValue(criteria.where.like, true);
+        dbOptions.startkey = value.startkey;
+        dbOptions.endkey = value.endkey;
+        dbOptions.include_docs = true;
+        return db.view('views', viewName, dbOptions, next);
+      },
 
-    // Handle general-case criteria queries using a view
-    function elseDo (next){
-      var viewName = views.name(criteria.where);
-      dbOptions.key = views.value(criteria.where);
-      return db.view('views', viewName, dbOptions, next);
-    },
+      // Handle general-case criteria queries using a view
+      function elseDo (next){
+        var viewName = views.name(criteria.where);
+        dbOptions.key = views.value(criteria.where);
+        dbOptions.include_docs = true;
+        return db.view('views', viewName, dbOptions, next);
+      },
 
-    function finallyDo(err, reply) {
-      if (err) {
-        if (err.status_code === 404 && round < 1) {
-          views.create(db, criteria.where.like || criteria.where, function createdView(err) {
-            if (err) {
-              return cb(err);
-            }
-            find.call(connectionName, connectionName, collectionName, criteria, cb, round + 1);
-          });
-          return;
+      function finallyDo(err, reply) {
+        if (err) {
+          if (err.status_code === 404 && round < 1) {
+            views.create(db, criteria.where.like || criteria.where, function createdView(err) {
+              if (err) {
+                return cb(err);
+              }
+              find.call(connectionName, connectionName, collectionName, criteria, cb, round + 1);
+            });
+            return;
+          }
+
+          return cb(err);
         }
 
-        return cb(err);
+        return cb(null, reply.rows.map(props('value', 'doc')).map(docForReply));
       }
-
-      return cb(null, reply.rows.map(prop('value')).map(docForReply));
-    }
   );
 
 
@@ -482,10 +484,10 @@ adapter.merge = function adapterMerge(connectionName, collectionName, id, attrs,
 
   var coll = registry.collection(collectionName);
   /*
-  console.log('------------------------------------------');
-  console.log('Attempting merge on ',collectionName,id,attrs);
-  console.log('------------------------------------------');
-  */
+   console.log('------------------------------------------');
+   console.log('Attempting merge on ',collectionName,id,attrs);
+   console.log('------------------------------------------');
+   */
 
   if ('number' != typeof attempts) attempts = 0;
   else if (attempts > 0) {
@@ -624,7 +626,17 @@ function prop(p) {
   };
 }
 
+function props(p, q) {
+  return function(o) {
+    return [o[p], o[q]];
+  };
+}
+
 function docForReply(doc) {
+  if (Array.isArray(doc)) {
+    doc = doc[0] === doc[1]._id ? doc[1] : doc[0];
+  }
+
   if (doc._id) {
     doc.id = doc._id;
     delete doc._id;

@@ -74,5 +74,8 @@ function createView(db, where, cb) {
 
 function fixAttributeName(attrName) {
   if (attrName == 'id') attrName = '_id';
+  if (attrName.indexOf('.') !== -1) {
+    attrName = attrName.replace('.', '\'][\'');
+  }
   return attrName;
 }
