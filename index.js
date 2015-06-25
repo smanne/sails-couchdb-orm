@@ -283,16 +283,35 @@ function find(connectionName, collectionName, criteria, cb, round) {
   if (queriedAttributes.length == 1 && (queriedAttributes[0] == 'id' || queriedAttributes[0] == '_id')) {
     var id = criteria.where.id || criteria.where._id;
 
-    db.get(id, dbOptions, function(err, doc) {
-      if (err) {
-        if (err.status_code == 404) {
-          return cb(null, []);
+    if (Array.isArray(id)) {
+      db.fetch({keys: id}, dbOptions,  function(err, docs) {
+        if (err) {
+          if (err.status_code == 404) {
+            return cb(null, []);
+          }
+          return cb(err);
         }
-        return cb(err);
-      }
-      var docs = doc ? [doc] : [];
-      return cb(null, docs.map(docForReply));
-    });
+
+        if (!Array.isArray(docs) && docs.rows) {
+          docs = docs.rows.map(prop('doc'));
+        }
+
+        return cb(null, docs.map(docForReply));
+      });
+    }
+    else {
+      db.get(id, dbOptions, function(err, doc) {
+        if (err) {
+          if (err.status_code == 404) {
+            return cb(null, []);
+          }
+          return cb(err);
+        }
+        var docs = doc ? [doc] : [];
+        return cb(null, docs.map(docForReply));
+      });
+    }
+
     return;
   }
 
