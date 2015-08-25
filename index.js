@@ -652,20 +652,24 @@ function props(p, q) {
 }
 
 function docForReply(doc) {
-  if (Array.isArray(doc)) {
-    doc = doc[0] === doc[1]._id ? doc[1] : doc[0];
-  }
+  if (doc != undefined) {
+    if (Array.isArray(doc)) {
+      doc = doc[0] === doc[1]._id ? doc[1] : doc[0];
+    }
 
-  if (doc._id) {
-    doc.id = doc._id;
-    delete doc._id;
-  }
-  if (doc._rev) {
-    doc.rev = doc._rev;
-    delete doc._rev;
-  }
+    if (doc._id) {
+      doc.id = doc._id;
+      delete doc._id;
+    }
+    if (doc._rev) {
+      doc.rev = doc._rev;
+      delete doc._rev;
+    }
 
-  return doc;
+    return doc;
+  } else {
+    return {};
+  }
 }
 
 function docForIngestion(doc) {
